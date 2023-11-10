@@ -1,5 +1,6 @@
 // 引入组件
 import OrderIndex from '@/components/order/index.vue'
+import OrderInfo from '@/components/order/info.vue'
 
 //子路由列表
 const children = [ //子路由
@@ -7,7 +8,13 @@ const children = [ //子路由
         name: 'OrderIndex',
         path: 'index',
         component: OrderIndex,
-        meta:{auth: true},
+        meta: { auth: true },
+    },
+    {
+        name: 'OrderInfo',
+        path: 'info',
+        component: OrderInfo,
+        meta: { auth: true },
     },
 ]
 

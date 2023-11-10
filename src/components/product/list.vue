@@ -44,11 +44,12 @@
 </template>
 
 <script setup>
-//相当于vue2 选项式API当中的 this对象
+
+// 相当于vue2 选项式API当中的 this对象
 import { getCurrentInstance } from 'vue'
 const { proxy } = getCurrentInstance()
 
-//响应式数据
+// 响应式数据
 let TypeActive = proxy.$route.query.hasOwnProperty('typeid') ? proxy.$route.query.typeid : 0;
 TypeActive = parseInt(TypeActive)
 TypeActive = ref(TypeActive)

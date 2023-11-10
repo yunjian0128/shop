@@ -24,27 +24,31 @@
                 <div class="list">
                     <div class="item" v-for="order in list">
                         <div class="item-left">
-                            <img src="/assets/images/02.jpg" alt="">
+                            <img :src="order.thumb_text" />
                         </div>
                         <div class="item-right">
                             <div class="item">订单编号：{{ order.code }}</div>
-                            <div class="item">商品名称：7999卧室套餐</div>
+                            <div class="item">商品名称：{{ order.proname }}</div>
                             <div class="item">下单时间：{{ order.createtime_text }}</div>
                             <div class="item">订单金额：￥{{ order.amount }}</div>
                             <div class="item">订单状态：{{ order.status_text }}</div>
+                        </div>
+                        <div class="btn-box">
+                            <van-button type="primary" size="small" @click="OrderInfo(order.id)">详情</van-button>
 
-                            <div class="btn-box">
-                                <van-button type="primary" size="small">详情</van-button>
+                            <!-- 已支付 -->
+                            <van-button type="danger" size="small" v-if="order.status == '1'"
+                                @click="CancelOrder(order.id)">取消订单</van-button>
 
-                                <van-button type="success" size="small" v-if="order.status == '2'">确认收货</van-button>
-                                <van-button type="default" size="small" v-if="order.status == '2' && order.expresscode"
-                                    @click="express(order.id)">查看物流</van-button>
+                            <!-- 已发货 -->
+                            <van-button type="success" size="small" v-if="order.status == '2'">确认收货</van-button>
+                            <van-button type="default" size="small" v-if="order.status == '2' && order.expresscode"
+                                @click="express(order.id)">查看物流</van-button>
+                            <van-button type="danger" size="small"
+                                v-if="order.status == '2' || order.status == '3'">退货退款</van-button>
 
-                                <van-button type="warning" size="small" v-if="order.status == '3'">评价</van-button>
-
-                                <van-button type="danger" size="small"
-                                    v-if="order.status == '1' || order.status == '2'">退货</van-button>
-                            </div>
+                            <!-- 已收货 -->
+                            <van-button type="warning" size="small" v-if="order.status == '3'">评价</van-button>
                         </div>
                     </div>
                 </div>
@@ -54,11 +58,12 @@
 </template>
 
 <script setup>
-//相当于vue2 选项式API当中的 this对象
+
+// 相当于vue2 选项式API当中的 this对象
 import { getCurrentInstance } from 'vue'
 const { proxy } = getCurrentInstance()
 
-//获取到用户的信息
+// 获取到用户的信息
 var business = reactive(proxy.$cookies.get('business'))
 let active = ref(0)
 let list = ref([])
@@ -67,20 +72,23 @@ let finished = ref(false)
 let refreshing = ref(false)
 let page = ref(1)
 
-//钩子函数
+// 钩子函数
 onBeforeMount(() => {
-    //请求列表
+
+    // 请求列表
     OrderData()
 })
 
+// 返回
 const back = () => {
     proxy.$router.go(-1)
     return false
 }
 
-//接口请求
+// 接口请求
 let OrderData = async () => {
-    //封装数据
+
+    // 封装数据
     var data = {
         busid: business.id,
         page: page.value,
@@ -98,6 +106,7 @@ let OrderData = async () => {
     if (result.code == 0) {
         finished.value = true
     } else {
+        console.log(result);
         list.value = list.value.concat(result.data)
         page.value++
     }
@@ -109,7 +118,7 @@ let TabChange = async () => {
     list.value = []
     finished.value = false
     loading.value = true
-    load()
+    await load()
 }
 
 // 下拉刷新
@@ -123,11 +132,61 @@ let refresh = async () => {
 
 // 上拉加载
 let load = async () => {
+
     // 如果刷新状态已经为true了，就要修改为false
     if (refreshing.value) {
         refreshing.value = false
     }
 
-    OrderData()
+    await OrderData()
 }
+
+// 订单详情
+let OrderInfo = orderid => {
+
+    // 跳转到详情页面
+    proxy.$router.push({
+        path: '/order/info',
+        query: { orderid: orderid }
+    })
+}
+
+// 取消订单
+let CancelOrder = async (orderid) => {
+    proxy.$confirm({
+        title: '取消订单提醒',
+        message: '是否确认取消订单',
+    }).then(async () => {
+        // 组装数据
+        var data = {
+            busid: business.id,
+            orderid: orderid
+        }
+
+        var result = await proxy.$POST({
+            url: '/order/cancel',
+            params: data
+        })
+
+        if (result.code == 0) {
+            proxy.$fail(result.msg)
+            return false
+        } else {
+            proxy.$success(result.msg)
+            await refresh()
+        }
+
+    }).catch(err => {
+        console.log(err);
+    })
+}
+
+// 查看物流
+let express = orderid => {
+    proxy.$router.push({
+        path: '/order/express',
+        query: { orderid: orderid }
+    })
+}
+
 </script>

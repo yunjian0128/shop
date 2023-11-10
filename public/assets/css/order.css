@@ -201,6 +201,7 @@ li {
 
 .list .item {
     display: flex;
+    flex-wrap: wrap;
     background: #fff;
     font-size: 12px;
     margin-bottom: 10px;
@@ -246,12 +247,13 @@ li {
     color: red;
 }
 
-.item-right .btn-box {
-    position: absolute;
-    bottom: 5px;
+.btn-box {
+    width: 100%;
+    margin-top: 15px;
+    display: flex;
+    justify-content: flex-end;
 }
 
-.item-right .btn-box button {
-    background: #fff;
-    border: 1px solid #ccc;
+.btn-box button {
+    margin-right: 10px;
 }
